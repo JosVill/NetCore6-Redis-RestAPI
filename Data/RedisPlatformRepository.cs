@@ -21,12 +21,19 @@ namespace RedisAPI.Data
             var db = _redis.GetDatabase();
             var serialPlat = JsonSerializer.Serialize(plat);
             db.StringSet(plat.Id, serialPlat);
+            db.SetAdd("PatformSet", serialPlat);
         }
 
         public IEnumerable<Platform?>? GetAllPlatforms()
         {
             var db = _redis.GetDatabase();
-            var completeSet = db.GetAll();
+            var completeSet = db.SetMembers("PlatformSet");
+          
+            if(completeSet.Length > 0)
+            {
+                var obj = Array.ConvertAll(completeSet, val =>JsonSerializer.Deserialize<Platform>(val));
+                return obj;
+            }
         }
 
         public Platform? GetPlatformById(string id)
